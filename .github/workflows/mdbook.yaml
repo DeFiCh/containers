@@ -12,7 +12,7 @@ jobs:
       uses: ./.github/workflows/dockerize-contextless.yaml
       with:
         dockerfile: mdbook.dockerfile
-        tag: mdbook:latest
+        tag: defi/mdbook:latest
       secrets:
         username: ${{ secrets.DOCKER_HUB_USER }}
         token: ${{ secrets.DOCKER_HUB_TOKEN }}
