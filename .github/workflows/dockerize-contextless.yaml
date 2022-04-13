@@ -18,6 +18,9 @@ on:
 jobs:
   dockerize-contextless:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
     steps:
       - uses: actions/checkout@v2
       - name: Login to Docker Hub
