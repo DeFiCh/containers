@@ -1,0 +1,25 @@
+name: mdbook
+
+on:
+  push:
+    paths:
+      - 'mdbook.dockerfile'
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+    steps:
+      - uses: actions/checkout@v2
+      - env:
+          DOCKER_HUB_USER: "${{ secrets.DOCKER_HUB_USER }}"
+          DOCKER_HUB_TOKEN: "${{ secrets.DOCKER_HUB_TOKEN }}"
+        run: | 
+          set -Eeuo pipefail
+          docker build -t mdbook:latest - < mdbook.dockerfile
+          docker login \
+            --username "$DOCKER_HUB_USER" \
+            --password "$DOCKER_HUB_TOKEN"
+          docker push mdbook:latest defi/mdbook:latest
