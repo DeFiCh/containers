@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - 'mdbook.dockerfile'
+  
+  workflow_dispatch:
 
 jobs:
   dockerize:
