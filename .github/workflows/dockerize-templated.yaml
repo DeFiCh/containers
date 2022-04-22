@@ -1,8 +1,11 @@
-name: dockerize-contextless
+name: dockerize-templated
 
 on:
   workflow_call:
     inputs:
+     contextdir:
+       type: string
+       required: false
      dockerfile: 
       type: string
       required: true
@@ -16,7 +19,7 @@ on:
         required: true
 
 jobs:
-  dockerize-contextless:
+  dockerize-templated:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     concurrency:
@@ -28,12 +31,19 @@ jobs:
         with:
           username: ${{ secrets.username }}
           password: ${{ secrets.token }}
+      - name: Expand templates
+        run: |
+          container_hash=$(docker create docker.io/hairyhenderson/gomplate:stable)
+          docker cp $container_hash:/gomplate /usr/local/bin/gomplate
+          ./scripts/expand-template.sh "${{ inputs.contextdir }}"
       - name: Build and publish
         run: | 
           set -Eeuo pipefail
-          dockerfile="${{ inputs.dockerfile }}"
+          build_dir="./build"
+          contextdir="${build_dir}/${{ inputs.contextdir }}"
+          dockerfile="${build_dir}/${{ inputs.dockerfile }}"
           tag="${{ inputs.tag }}"
 
-          docker build -t "${tag}" - < "${dockerfile}"
-          docker push "${tag}"
+          docker build -f "${dockerfile}" -t "${tag}" "${contextdir}" 
+          # docker push "${tag}"
 

@@ -1,0 +1,20 @@
+name: nginx-static-8080
+
+on:
+  push:
+    paths:
+      - 'nginx-static/*'
+  
+  workflow_dispatch:
+
+jobs:
+  dockerize:
+      uses: ./.github/workflows/dockerize-templated.yaml
+      with:
+        contextdir: ./nginx-static
+        dockerfile: ./nginx-static/Dockerfile
+        tag: defi/nginx-static-8080:latest
+      secrets:
+        username: ${{ secrets.DOCKER_HUB_USER }}
+        token: ${{ secrets.DOCKER_HUB_TOKEN }}
+
