@@ -3,16 +3,20 @@ name: dockerize-contextless
 on:
   workflow_call:
     inputs:
-     dockerfile: 
+     dockerfile:
+      description: Docker file path
       type: string
       required: true
      tag:
+      description: Docker tag
       type: string
       required: true
     secrets:
-      username: 
+      username:
+        description: Docker hub username
         required: true
       token:
+        description: Docker hub token
         required: true
 
 jobs:

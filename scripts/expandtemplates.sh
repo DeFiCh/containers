@@ -13,6 +13,7 @@ set -Eeuo pipefail
 
 setup_vars() {
     PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+    GOMPLATE_BIN="${GOMPLATE_BIN:-gomplate}"
 
     local inputs=()
     inputs=("${1:?input-dir required}")
@@ -40,8 +41,6 @@ setup_vars() {
     OUTPUT_ROOT_DIR="${inputs[1]}"
     ENVFILE="${inputs[2]}"
     ENVFILE_OVERRIDE="${inputs[3]}"
-
-    cd "$PROJECT_DIR"
 }
 
 verify_path_scopes() {
@@ -65,12 +64,13 @@ main() {
         usage; exit;
     fi
     setup_vars "$@"
+    cd "$PROJECT_DIR"
     expand_template
 }
 
 check_prereq() {
-    :
-    # check for realpath from GNU coreutils is required. Please install coreutils. 
+    # check for realpath from GNU coreutils is required. Please install coreutils.
+    : 
 }
 
 usage() {
@@ -91,10 +91,14 @@ expand_template() {
 
     local output="${output_root}/${input}"
     
-    [[ -f "${envfile}" ]] && export $(xargs < "${envfile}")
-    [[ -f "${envfile_override}" ]] && export $(xargs < "${envfile_override}")
+    set -o allexport;
+    # shellcheck source=/dev/null
+    [[ -f "${envfile}" ]] && source "${envfile}"
+    # shellcheck source=/dev/null
+    [[ -f "${envfile_override}" ]] && source "${envfile_override}"
+    set +o allexport;
     
-    gomplate --input-dir "${input}" --output-dir "${output}"
+    "${GOMPLATE_BIN}" --input-dir "${input}" --output-dir "${output}"
 }
 
 main "$@"

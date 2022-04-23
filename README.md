@@ -8,7 +8,7 @@ This is a common repository for container images that need to be published to be
 
 ## How
 
-- Add image defintion to, one of:
+- Add image definition to, one of:
   - `<image>.dockerfile` if it's contextless dockerfile in the root
   - `<image>/Dockerfile` if it's takes the image dir is expected to have only a single docker file and the dir is the context.
   - `<category>/<image>.dockerfile` if the category is expected to have multiple dockerfiles.
@@ -20,8 +20,10 @@ This is a common repository for container images that need to be published to be
 - Set the `dockerize` workflow inputs, and the workflow trigger `path` to be just the relevant files.
 - Push. Images should be published to `defi/<image>` when the workflow is run successfully.
 
-## Notes
+## Developer Notes
 
+- Make sure to run `make check` before any commits. They also auto-set pre-commit hooks as needed.
 - [Do not use short names for images](https://www.redhat.com/sysadmin/container-image-short-names). Use a registry qualified name: eg: `docker.io/rust` instead of `rust`.
-- Keep it simple. Try not to change to many default unless absolutely needed.
+- Keep it simple. Try not to change many defaults unless absolutely needed.
+- Try to use major version numbers or `stable` tag, if provided as much as possible - eg: `docker.io/rust:1` instead of `rust:1.77` or `rust:latest`. Pinning version numbers to the minor or patch usually defeats the perception of security for well audited, maintained and open public images with established review processes. Do this when there's a good reason to do so (eg: single user controlled repository with insufficient review practices).
 - Why Go Text templates? While others like handlebars are arguably simpler, and jinja / tera are more interesting, go templates are the defacto templating system in the devops world with k8s and docker. So using that avoid context switches, and go templates do strike the balance between simplicity and flexibility.
