@@ -1,12 +1,22 @@
 SHELL := /bin/bash
-BUILD_DIR := build
+SELF_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
+PROJECT_DIR := $(notdir $(patsubst %/,%,$(dir $(SELF_PATH))))
+
+BUILD_DIR ?= build
+BUILD_DIR := $(patsubst %/, %, $(BUILD_DIR))
+
+# Certain target only requirements
+CONTEXT_DIR ?=
+ENV_FILE ?=
+ENV_OVERRIDE_FILE ?=
 
 # If the bin is present in env, it's used, otherwise, it's installed into
 # workspace path, and then used.
-GOMPLATE_BIN := gomplate
+GOMPLATE_BIN ?= gomplate
 WORKSPACE_GOMPLATE_BIN := $(BUILD_DIR)/bin/gomplate
 
-GIT_HOOK := .git/hooks/pre-commit
+ALL_TEMPLATE_CONTEXTS := $(filter-out $(BUILD_DIR)/, $(wildcard */))
+GIT_HOOK := $(PROJECT_DIR)/.git/hooks/pre-commit
 
 .ONESHELL:
 
@@ -23,7 +33,7 @@ clean:
 .PHONY: lint
 lint:
 	@docker run -e LOG_LEVEL=WARN -e RUN_LOCAL=true \
-		-v "$(CURDIR)":/tmp/lint docker.io/github/super-linter
+		-v "$(PROJECT_DIR)":/tmp/lint docker.io/github/super-linter
 
 .PHONY: shellcheck
 shellcheck:
@@ -53,24 +63,37 @@ ensure-pkg-gomplate:
 	then echo "$(WORKSPACE_GOMPLATE_BIN)"; \
 	else echo "$(GOMPLATE_BIN)"; fi))
 
-	[[ "$$(command -v $(GOMPLATE_BIN))" ]] && exit 0
+	[[ "$(WORKSPACE_GOMPLATE_BIN)" != "$(GOMPLATE_BIN)" ]] && exit 0
 	mkdir -p "$$(dirname "$(WORKSPACE_GOMPLATE_BIN)")"
 	container_hash="$$(docker create docker.io/hairyhenderson/gomplate:stable)"
 	docker cp "$${container_hash}":/gomplate "$(WORKSPACE_GOMPLATE_BIN)"
 	docker rm "$${container_hash}"
 
-.PHONY: expand-templates
+.PHONY: expand_templates
 expand-templates: ensure-pkg-gomplate
 	@if [[ -z "$(CONTEXT_DIR)" ]]; then
-		echo "CONTEXT_DIR arg is required"
+		echo "CONTEXT_DIR is required"
 		exit 1
 	fi
-	GOMPLATE_BIN="$(GOMPLATE_BIN)" ./scripts/expandtemplates.sh "$(CONTEXT_DIR)" "$(BUILD_DIR)"
+	context_dir="$(CONTEXT_DIR)"
+	build_dir="$(BUILD_DIR)"
+	env_file="$(ENV_FILE)"
+	env_override_file="$(ENV_OVERRIDE_FILE)"
+	gomplate_bin="$(GOMPLATE_BIN)"
+
+	env_file="$${env_file:-$${context_dir}/.env}"
+	env_override_file="$${env_override_file:-$${context_dir}/.env.override}"
+	set -o allexport;
+	[[ -f "$${env_file}" ]] && source "$${env_file}"
+	[[ -f "$${env_override_file}" ]] && source "$${env_override_file}"
+	set +o allexport;
+
+	output_dir="$${build_dir}/$${context_dir}"
+	"$${gomplate_bin}" --input-dir "$${context_dir}" --output-dir "$${output_dir}"
 
 .PHONY: expand-templates-all
 expand-templates-all: ensure-pkg-gomplate
-	@find . -mindepth 1 -type d \
-		\( -path "./.github" -o -path "./scripts" -o -path "./.git" -o \
-		 -path "./$(BUILD_DIR)" \) -prune \
-		-o -type d -exec env GOMPLATE_BIN="$(GOMPLATE_BIN)" \
-		./scripts/expandtemplates.sh {} "$(BUILD_DIR)" \;
+	@for ctx in $(ALL_TEMPLATE_CONTEXTS); do
+		echo "Expand: $${ctx}"
+		$(MAKE) expand-templates CONTEXT_DIR="$${ctx}"
+	done
