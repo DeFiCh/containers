@@ -9,7 +9,7 @@ on:
 
 jobs:
   dockerize:
-      uses: ./.github/workflows/dockerize-templated.yaml
+      uses: ./.github/workflows/dockerize.yaml
       with:
         contextdir: ./nginx-static
         dockerfile: ./nginx-static/Dockerfile

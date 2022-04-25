@@ -25,9 +25,10 @@ Hub under the `defi` namespace.
   - Additionally, `.env.override` file can be specified in the overflows to
   override the defaults.
 - Create `.github/workflows/<image><-suffix>.yaml` from an existing file that
-  reuses the `dockerize*` workflow.
+  reuses the `dockerize` workflow.
 - Set the `dockerize` workflow inputs, and the workflow trigger `path` to be
-  just the relevant files.
+  just the relevant files. If the dockerize input has `contextdir` set, it
+  uses the templated path - otherwise, uses a context less file only build.
 - Push. Images should be published to `defi/<image>` when the workflow is run
   successfully.
 

@@ -9,7 +9,7 @@ on:
 
 jobs:
   dockerize:
-      uses: ./.github/workflows/dockerize-contextless.yaml
+      uses: ./.github/workflows/dockerize.yaml
       with:
         dockerfile: mdbook.dockerfile
         tag: defi/mdbook:latest

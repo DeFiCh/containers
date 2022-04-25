@@ -1,10 +1,15 @@
-name: dockerize-contextless
+name: dockerize-templated
 
 on:
   workflow_call:
     inputs:
-     dockerfile:
-      description: Docker file path
+     contextdir:
+      description: Docker context dir
+      type: string
+      required: false
+      default: ""
+     dockerfile: 
+      description: Dockerfile path
       type: string
       required: true
      tag:
@@ -12,7 +17,7 @@ on:
       type: string
       required: true
     secrets:
-      username:
+      username: 
         description: Docker hub username
         required: true
       token:
@@ -20,7 +25,7 @@ on:
         required: true
 
 jobs:
-  dockerize-contextless:
+  dockerize:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     concurrency:
@@ -32,12 +37,15 @@ jobs:
         with:
           username: ${{ secrets.username }}
           password: ${{ secrets.token }}
+      - name: Lint
+        run: make lint
       - name: Build and publish
         run: | 
           set -Eeuo pipefail
-          dockerfile="${{ inputs.dockerfile }}"
-          tag="${{ inputs.tag }}"
-
-          docker build -t "${tag}" - < "${dockerfile}"
-          docker push "${tag}"
+          make build \
+            BUILD_DIR="./build" \
+            DOCKERFILE="${{ inputs.dockerfile }}" \
+            CONTEXT_DIR="${{ inputs.contextdir }}" \
+            TAG="${{ inputs.tag }}"
+          docker push "${{ inputs.tag }}"
 
