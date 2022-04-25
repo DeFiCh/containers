@@ -1,6 +1,8 @@
 SHELL := /bin/bash
-SELF_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
-PROJECT_DIR := $(notdir $(patsubst %/,%,$(dir $(SELF_PATH))))
+
+SELF_PATH_BASE := $(lastword $(MAKEFILE_LIST))
+SELF_PATH := $(abspath $(SELF_PATH_BASE))
+PROJECT_DIR := $(patsubst %/$(SELF_PATH_BASE),%,$(SELF_PATH))
 
 BUILD_DIR ?= build
 BUILD_DIR := $(patsubst %/, %, $(BUILD_DIR))
