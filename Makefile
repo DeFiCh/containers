@@ -33,7 +33,7 @@ check: add-githook lint expand-templates-all
 
 .PHONY: clean
 clean:
-	rm -rf "$(BUILD_DIR)"
+	rm -rf "$(BUILD_DIR)" super-linter.log
 
 .PHONY: lint
 lint:
