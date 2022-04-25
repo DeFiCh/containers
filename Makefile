@@ -21,7 +21,7 @@ GOMPLATE_BIN ?= gomplate
 WORKSPACE_GOMPLATE_BIN := $(BUILD_DIR)/bin/gomplate
 
 ALL_TEMPLATE_CONTEXTS := $(filter-out $(BUILD_DIR)/, $(wildcard */))
-GIT_HOOK := $(PROJECT_DIR)/.git/hooks/pre-commit
+GIT_HOOK := $(PROJECT_DIR)/.git/hooks/pre-push
 
 .ONESHELL:
 
@@ -44,7 +44,7 @@ lint:
 shellcheck:
 	@find . -type f -name "*.sh" -exec shellcheck {} \;
 
-.PHONY: githook-add
+.PHONY: add-githook
 add-githook:
 	@mkdir -p "$$(dirname $(GIT_HOOK))"
 	tee "$(GIT_HOOK)" <<END
