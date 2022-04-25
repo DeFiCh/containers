@@ -1,4 +1,4 @@
-name: dockerize-templated
+name: dockerize
 
 on:
   workflow_call:
