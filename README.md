@@ -31,11 +31,12 @@ Hub under the `defi` namespace.
   uses the templated path - otherwise, uses a context less file only build.
 - Push. Images should be published to `defi/<image>` when the workflow is run
   successfully.
+- Most workflows are setup to refresh themselves daily.
 
 ## Developer Notes
 
-- Make sure to run `make check` before any commits. They also auto-set
-  pre-commit hooks as needed.
+- Make sure to run `make check` before any commits. They also auto-set up
+  pre-push hooks as needed.
 - [Do not use short names for images](https://www.redhat.com/sysadmin/container-image-short-names).
   Use a registry qualified name: eg: `docker.io/rust` instead of `rust`.
 - Keep it simple. Try not to change many defaults unless absolutely needed.
